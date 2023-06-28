@@ -1,8 +1,9 @@
 import React from 'react';
 import { useState } from 'react';
 import Button from '@mui/material/Button';
-import {Grid ,Typography} from '@mui/material'
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import {Grid ,Typography, Container} from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles';
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'
 
 import CurrentMove, {Step, Square} from './AllSteps';
 import theme from './Themes';
@@ -32,16 +33,13 @@ function Board(props) {
   }
 
   return (
-    <Grid container spacing={3}>
-      {/* <Grid item xs={12}>
-        <Typography theme={theme} variant="h2" style={{ color: '#ff6f3c' }}>TIC TAC TOE</Typography>
-      </Grid> */}
+    <Grid container >
       <Grid item xs={12}>
         <Grid container direction="row"
               alignItems="flex-start"
               justifyContent="flex-start">
-          <Grid item xs={12}>
-            <Typography variant="h2" style={{ color: '#ff9a3c' }}>{status}</Typography>
+          <Grid item xs={6}>
+            <Typography variant='h5' color='primary'>{status}</Typography>
           </Grid>
           <Grid container >
             <Grid item xs={12}>
@@ -75,7 +73,7 @@ function Board(props) {
 function Steps(a) {
   let { param1, param2 } = a;
   return (
-    <Grid container direction="row">
+    <Grid container>
       <Grid item xs={6}>
         <Step param1 = { param1 }/> 
       </Grid>
@@ -95,11 +93,7 @@ export default function Game() {
 
   function handlePlay(nextSquares) {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
-    console.log("H" + history)
-    console.log("C" + currentMove)
-    console.log("N" + nextSquares)
     setHistory(nextHistory);
-    console.log(nextHistory)
     setCurrentMove(nextHistory.length - 1);
   }
 
@@ -108,7 +102,6 @@ export default function Game() {
   }
 
   const moves = history.map((squares, move) => {
-    // console.log(squares, move)
     let description;
     if (move > 0) {
       description = 'Go to move: ' + move;
@@ -116,29 +109,37 @@ export default function Game() {
       description = 'Go to game start';
     }
     return (
-      <Grid container>
-        <li key={move} style={{ color: '#ff9a3c', fontSize: '20px'}}>
-          <Button variant="contained" style={{backgroundColor:"#ffcab0", }} onClick={() => jumpTo(move)}>{description}</Button>
-        </li>
+      <Grid item key={move}>
+        <Button variant="contained" color='warning' onClick={() => jumpTo(move)}>{description}</Button>
       </Grid>
-        
     );
   });
 
   return (
     <ThemeProvider theme={theme}>
-      <Grid container direction="row">
-        <Grid item xs={12}>
-          <Typography variant="h2" style={{ color: '#ff6f3c' }}>TIC TAC TOE</Typography>
+      <Container maxWidth="lg">
+        
+        <Grid container spacing={1}>
+
+          <Grid item xs={12}>
+            <Typography variant="h3" color={xIsNext ? `secondary` : `primary`} >TIC TAC TOE</Typography>
+          </Grid>
+
+          <Grid item xs={4}>
+            <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+
+            <Grid container spacing={1} direction='column'>
+              {moves}
+            </Grid>
+          </Grid>
+
+          <Grid item xs={8}>
+            <Steps param1={history} param2={currentMove}  />
+          </Grid>
+
         </Grid>
-        <Grid item xs={4}>
-          <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
-          <ol>{moves}</ol>
-        </Grid>
-        <Grid item xs={8}>
-          <Steps param1={history} param2={currentMove}  />
-        </Grid>
-      </Grid>
+        
+      </Container>
     </ThemeProvider>
   );
 }
