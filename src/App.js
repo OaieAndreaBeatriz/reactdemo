@@ -1,74 +1,13 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import {Grid ,Typography, Container} from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles';
-import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'
 
-import CurrentMove, {Step, Square} from './AllSteps';
+import CurrentMove, {Step} from './AllSteps';
+import Board from './Board'
 import theme from './Themes';
 
-
-function Board(props) {
-  let { xIsNext, squares, onPlay } = props;
-  function handleClick(i) {
-    if (calculateWinner(squares) || squares[i]) {
-      return;
-    }
-    const nextSquares = squares.slice(); 
-    if (xIsNext) {
-      nextSquares[i] = 'X';
-    } else {
-      nextSquares[i] = 'O';
-    }
-    onPlay(nextSquares);
-  }
-
-  const winner = calculateWinner(squares);
-  let status;
-  if (winner) {
-    status = 'Winner: ' + winner;
-  } else {
-    status = 'Next player: ' + (xIsNext ? 'X' : 'O');
-  }
-
-  return (
-    <Grid container >
-      <Grid item xs={12}>
-        <Grid container direction="row"
-              alignItems="flex-start"
-              justifyContent="flex-start">
-          <Grid item xs={6}>
-            <Typography variant='h5' color='primary'>{status}</Typography>
-          </Grid>
-          <Grid container >
-            <Grid item xs={12}>
-              <Grid container>
-                <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-                <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-                <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-              </Grid>
-            </Grid>
-            <Grid item xs={12}>
-              <Grid container>
-                <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-                <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-                <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-              </Grid>
-            </Grid>
-            <Grid item xs={12}>
-              <Grid container>
-                <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-                <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-                <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
-  );
-}
 
 function Steps(a) {
   let { param1, param2 } = a;
@@ -87,9 +26,24 @@ function Steps(a) {
 export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
+  // verifica cine urmeaza 
   const xIsNext = currentMove % 2 === 0;
-  const currentSquares = history[currentMove]; 
-  
+  const currentSquares = history[currentMove];
+
+  useEffect(() => {
+    let possibleNextMoves = []
+
+    if(xIsNext === false) {
+      for(let i=0; i < currentSquares.length; i++){
+        if(currentSquares[i] === null){
+          possibleNextMoves.push(i)
+        }
+      }
+      const randomMove = Math.floor(Math.random(possibleNextMoves) )
+      currentSquares[randomMove] = 'O'
+      console.log(currentSquares, '1')
+    }
+  },[xIsNext])
 
   function handlePlay(nextSquares) {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -118,27 +72,23 @@ export default function Game() {
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth="lg">
-        
         <Grid container spacing={1}>
-
           <Grid item xs={12}>
             <Typography variant="h3" color={xIsNext ? `secondary` : `primary`} >TIC TAC TOE</Typography>
           </Grid>
-
           <Grid item xs={4}>
-            <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
-
+            <Board xIsNext={xIsNext}
+            squares={currentSquares}
+            onPlay={handlePlay}
+            calculateWinner={calculateWinner}/>
             <Grid container spacing={1} direction='column'>
               {moves}
             </Grid>
           </Grid>
-
           <Grid item xs={8}>
             <Steps param1={history} param2={currentMove}  />
           </Grid>
-
         </Grid>
-        
       </Container>
     </ThemeProvider>
   );

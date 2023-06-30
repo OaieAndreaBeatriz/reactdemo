@@ -1,5 +1,4 @@
 import { Grid ,Typography, Button } from '@mui/material'
-import theme from './Themes';
 
 export function Square({ value, onSquareClick }) {
   return (
@@ -38,9 +37,6 @@ export function Step(props) {
     </Grid>
   );
 }
-
-
-
 
 export default function CurrentMove(props){
   let { param2 } = props
