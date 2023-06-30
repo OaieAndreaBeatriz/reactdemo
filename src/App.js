@@ -14,10 +14,10 @@ function Steps(a) {
   return (
     <Grid container>
       <Grid item xs={6}>
-        <Step param1 = { param1 }/> 
+        <Step param1 = { param1 }/>
       </Grid>
       <Grid item xs={6}>
-        <CurrentMove param2 = { param2 } /> 
+        <CurrentMove param2 = { param2 } />
       </Grid>
     </Grid>
   );
@@ -26,24 +26,9 @@ function Steps(a) {
 export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
-  // verifica cine urmeaza 
+  // verifica cine urmeaza
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
-
-  useEffect(() => {
-    let possibleNextMoves = []
-
-    if(xIsNext === false) {
-      for(let i=0; i < currentSquares.length; i++){
-        if(currentSquares[i] === null){
-          possibleNextMoves.push(i)
-        }
-      }
-      const randomMove = Math.floor(Math.random(possibleNextMoves) )
-      currentSquares[randomMove] = 'O'
-      console.log(currentSquares, '1')
-    }
-  },[xIsNext])
 
   function handlePlay(nextSquares) {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -78,9 +63,8 @@ export default function Game() {
           </Grid>
           <Grid item xs={4}>
             <Board xIsNext={xIsNext}
-            squares={currentSquares}
-            onPlay={handlePlay}
-            calculateWinner={calculateWinner}/>
+              squares={currentSquares}
+              onPlay={handlePlay}/>
             <Grid container spacing={1} direction='column'>
               {moves}
             </Grid>
@@ -92,25 +76,4 @@ export default function Game() {
       </Container>
     </ThemeProvider>
   );
-}
-
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-  return null;
 }

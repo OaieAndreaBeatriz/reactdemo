@@ -15,14 +15,7 @@ export default function AlertMessages(props) {
             <Alert onClose={() => onHandleClose(false)} severity={severity} sx={{ width: '100%' }}>
                 <AlertTitle>{messageTitle}</AlertTitle>
                 {message}
-            </Alert> 
+            </Alert>
         </Snackbar>
     )
 }
-
-export function handlePlay(props) {
-    let {setHistory, currentMove ,setCurrentMove, nextSquares} = props
-    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
-    setHistory(nextHistory);
-    setCurrentMove(nextHistory.length - 1);
-  }

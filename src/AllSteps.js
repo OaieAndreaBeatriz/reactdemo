@@ -10,7 +10,6 @@ export function Square({ value, onSquareClick }) {
   );
 }
 
-
 export function Step(props) {
   let { param1 } = props;
   return (
