@@ -1,70 +1,63 @@
-import React, {useEffect, useState} from "react";
-import {Grid ,Typography} from '@mui/material'
-import AlertMessages from './Handles'
-
-import {Square} from './AllSteps';
-
+import React, { useEffect, useState } from 'react';
+import { Grid, Typography } from '@mui/material';
+import AlertMessages from './Handles';
+import { Square } from './AllSteps';
 
 export default function Board(props) {
-  let { xIsNext, squares, onPlay } = props;
+  let { xIsNext, squares, onPlay, selectedPlayer } = props;
 
   const [alert, setAlert] = useState({
-    isOpen:false,
+    isOpen: false,
     severity: 'info',
     messageTitle: 'empty',
-    message: 'empty'
-  })
+    message: 'empty',
+  });
 
   useEffect(() => {
-    // verificam daca exista castigator
     if (calculateWinner(squares)) {
-    //  daca da, afisam mesajul alertWinner
       setAlert({
-        isOpen:true,
+        isOpen: true,
         severity: 'success',
-        messageTitle: `Winner ${winner}`,
-        message: 'Congrats!'
-      })
+        messageTitle: `Winner: ${calculateWinner(squares)}`,
+        message: 'Congrats!',
+      });
     }
-  }, [squares])
+  }, [squares]);
 
   useEffect(() => {
-    let possibleNextMoves = []
+    let possibleNextMoves = [];
     let nextMoveIndex = 0;
     const timer = setTimeout(() => {
-      if(xIsNext === false) {
-        for(let i=0; i < squares.length; i++){
-          if(squares[i] === null){
-            possibleNextMoves.push(i)
+      if (selectedPlayer === 'O' && !xIsNext) {
+        for (let i = 0; i < squares.length; i++) {
+          if (squares[i] === null) {
+            possibleNextMoves.push(i);
           }
         }
         let dangerLines = checkDangerLines(squares);
-        if (dangerLines.length > 0){
+        if (dangerLines.length > 0) {
           let randomIndex = Math.floor(Math.random() * dangerLines.length);
-          nextMoveIndex = dangerLines[randomIndex]
-          console.log('danger lines: ' + dangerLines + ' picking index: ' + nextMoveIndex)
+          nextMoveIndex = dangerLines[randomIndex];
         } else {
           let randomIndex = Math.floor(Math.random() * possibleNextMoves.length);
-          nextMoveIndex = possibleNextMoves[randomIndex]
-          console.log('normal lines: ' + possibleNextMoves + ' picking index: ' + nextMoveIndex)
+          nextMoveIndex = possibleNextMoves[randomIndex];
         }
         handleClick(nextMoveIndex);
       }
     }, 2000);
     return () => clearTimeout(timer);
-  },[xIsNext])
+  }, [xIsNext, selectedPlayer]);
 
   function handleClick(i) {
     const nextSquares = squares.slice();
 
-    // daca se da click pe un square ocupat, apare eroarea
     if (nextSquares[i] === 'X' || nextSquares[i] === 'O') {
       setAlert({
-        isOpen:true,
+        isOpen: true,
         severity: 'error',
         messageTitle: 'Error',
-        message: 'Wrong square!'
-      })
+        message: 'Wrong square!',
+      });
       return;
     }
 
@@ -77,33 +70,34 @@ export default function Board(props) {
       nextSquares[i] = 'O';
     }
     onPlay(nextSquares);
-  };
+  }
 
   const winner = calculateWinner(squares);
   let status;
   if (winner) {
     status = 'Winner: ' + winner;
   } else {
-    status = 'Next player: ' + (xIsNext ? 'X' : 'O');
+    status = 'Next player: ' + (selectedPlayer ? selectedPlayer : '...');
   }
 
   return (
-    <Grid container >
+    <Grid container>
       <AlertMessages
         isOpen={alert.isOpen}
-        onHandleClose={() => setAlert({isOpen:false})}
+        onHandleClose={() => setAlert({ isOpen: false })}
         severity={alert.severity}
         messageTitle={alert.messageTitle}
-        message={alert.message}/>
+        message={alert.message}
+      />
 
       <Grid item xs={12}>
-        <Grid container direction="row"
-              alignItems="flex-start"
-              justifyContent="flex-start">
+        <Grid container direction="row" alignItems="flex-start" justifyContent="flex-start">
           <Grid item xs={6}>
-            <Typography variant='h5' color='primary'>{status}</Typography>
+            <Typography variant="h5" color="primary">
+              {status}
+            </Typography>
           </Grid>
-          <Grid container >
+          <Grid container>
             <Grid item xs={12}>
               <Grid container>
                 <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
@@ -167,22 +161,23 @@ function checkDangerLines(squares) {
     [2, 4, 6],
   ];
 
-  for (let i = 0; i < lines.length; i++){
+  for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
-    if ((squares[a] === 'X' && squares[b] === 'X' && squares[c] == null) ||
-        (squares[a] === 'X' && squares[c] === 'X' && squares[b] == null) ||
-        (squares[b] === 'X' && squares[c] === 'X' && squares[a] == null)){
-          dangerLines.push([a, b, c].filter(i => squares[i] === null)[0]);
-        }
+    if (
+      (squares[a] === 'X' && squares[b] === 'X' && squares[c] == null) ||
+      (squares[a] === 'X' && squares[c] === 'X' && squares[b] == null) ||
+      (squares[b] === 'X' && squares[c] === 'X' && squares[a] == null)
+    ) {
+      dangerLines.push([a, b, c].filter((i) => squares[i] === null)[0]);
+    }
   }
 
-  if (dangerLines.length === 0)
-    return checkBestLines(squares);
+  if (dangerLines.length === 0) return checkBestLines(squares);
 
   return dangerLines;
 }
 
-function checkBestLines(squares){
+function checkBestLines(squares) {
   // return best indices for next move
   return [];
 }
