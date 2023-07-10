@@ -4,7 +4,8 @@ import AlertMessages from './Handles';
 import { Square } from './AllSteps';
 
 export default function Board(props) {
-  let { xIsNext, squares, onPlay, selectedPlayer } = props;
+  let { xIsNext, squares, onPlay, isFlipped } = props;
+  const [isComputerTurn, setIsComputerTurn] = useState(false);
 
   const [alert, setAlert] = useState({
     isOpen: false,
@@ -29,6 +30,7 @@ export default function Board(props) {
     let nextMoveIndex = 0;
     const timer = setTimeout(() => {
       if (!xIsNext) {
+        setIsComputerTurn(true);
         for (let i = 0; i < squares.length; i++) {
           if (squares[i] === null) {
             possibleNextMoves.push(i);
@@ -47,12 +49,16 @@ export default function Board(props) {
           nextMoveIndex = possibleNextMoves[randomIndex];
         }
         handleClick(nextMoveIndex);
+        setIsComputerTurn(false);
       }
     }, 2000);
     return () => clearTimeout(timer);
   }, [xIsNext]);
 
   function handleClick(i) {
+    if (isComputerTurn && !xIsNext) {
+      return;
+    }
     const nextSquares = squares.slice();
 
     if (nextSquares[i] === 'X' || nextSquares[i] === 'O') {
@@ -81,7 +87,7 @@ export default function Board(props) {
   if (winner) {
     status = 'Winner: ' + winner;
   } else {
-    status = 'Next player: ' + (selectedPlayer ? selectedPlayer : '...');
+    status = 'Next player: ' + (isFlipped ? (xIsNext ? 'X' : 'O') : ' ');
   }
 
   return (

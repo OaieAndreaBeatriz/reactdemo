@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { Button, Grid, Paper } from '@mui/material';
 
-export default function CoinFlip({ onPlayerSelect }) {
-  const [randomPlayer, setRandomPlayer] = useState('');
+export default function CoinFlip(props) {
+  let { setFirstPlayer, xIsNext } = props;
   const [isFlipped, setIsFlipped] = useState(false);
 
   const flipCoin = () => {
-    setIsFlipped((prevState) => !prevState);
-    const values = ['X', 'O'];
+    const values = [0, 1];
     const randomIndex = Math.floor(Math.random() * values.length);
-    const selectedPlayer = values[randomIndex];
-    setRandomPlayer(selectedPlayer);
-    onPlayerSelect(selectedPlayer);
+
+    if (!isFlipped) setIsFlipped((prevState) => !prevState);
+    setFirstPlayer(randomIndex);
   };
 
   const { transform, opacity } = useSpring({
@@ -48,7 +47,7 @@ export default function CoinFlip({ onPlayerSelect }) {
               fontSize: '24px',
             }}
           >
-            {randomPlayer}
+            {isFlipped ? (xIsNext ? 'X' : 'O') : ' '}
           </Paper>
         </animated.div>
       </Grid>
