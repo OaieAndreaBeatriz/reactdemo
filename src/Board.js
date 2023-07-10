@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Typography } from '@mui/material';
-import AlertMessages from './Handles';
+import AlertMessages from './AlertMessages';
 import { Square } from './AllSteps';
+import Animation from './Animations';
 
 export default function Board(props) {
-  let { xIsNext, squares, onPlay, selectedPlayer } = props;
+  let { xIsNext, squares, onPlay, isFlipped } = props;
+  const [isComputerTurn, setIsComputerTurn] = useState(false);
 
   const [alert, setAlert] = useState({
     isOpen: false,
@@ -27,28 +29,46 @@ export default function Board(props) {
   useEffect(() => {
     let possibleNextMoves = [];
     let nextMoveIndex = 0;
-    const timer = setTimeout(() => {
-      if (selectedPlayer === 'O' && !xIsNext) {
+    if (!xIsNext) {
+      setIsComputerTurn(true);
+      const timer = setTimeout(() => {
         for (let i = 0; i < squares.length; i++) {
           if (squares[i] === null) {
             possibleNextMoves.push(i);
           }
         }
-        let dangerLines = checkDangerLines(squares);
-        if (dangerLines.length > 0) {
-          let randomIndex = Math.floor(Math.random() * dangerLines.length);
-          nextMoveIndex = dangerLines[randomIndex];
+        let blockingLines = checkLines(squares, 'X');
+        if (blockingLines.length > 0) {
+          let randomIndex = Math.floor(Math.random() * blockingLines.length);
+          nextMoveIndex = blockingLines[randomIndex];
         } else {
-          let randomIndex = Math.floor(Math.random() * possibleNextMoves.length);
-          nextMoveIndex = possibleNextMoves[randomIndex];
+          let winningLines = checkLines(squares, 'O');
+          if (winningLines.length > 0) {
+            let randomIndex = Math.floor(Math.random() * winningLines.length);
+            nextMoveIndex = winningLines[randomIndex];
+          } else {
+            let randomIndex = Math.floor(Math.random() * possibleNextMoves.length);
+            nextMoveIndex = possibleNextMoves[randomIndex];
+          }
         }
         handleClick(nextMoveIndex);
-      }
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [xIsNext, selectedPlayer]);
+        setIsComputerTurn(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [xIsNext]);
 
   function handleClick(i) {
+    if (isComputerTurn && !xIsNext) {
+      setAlert({
+        isOpen: true,
+        severity: 'error',
+        messageTitle: 'Error',
+        message: 'Wait for your turn!',
+      });
+      return;
+    }
+
     const nextSquares = squares.slice();
 
     if (nextSquares[i] === 'X' || nextSquares[i] === 'O') {
@@ -77,7 +97,7 @@ export default function Board(props) {
   if (winner) {
     status = 'Winner: ' + winner;
   } else {
-    status = 'Next player: ' + (selectedPlayer ? selectedPlayer : '...');
+    status = 'Next player: ' + (isFlipped ? (xIsNext ? 'X' : 'O') : ' ');
   }
 
   return (
@@ -97,29 +117,31 @@ export default function Board(props) {
               {status}
             </Typography>
           </Grid>
-          <Grid container>
-            <Grid item xs={12}>
-              <Grid container>
-                <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-                <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-                <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
+          <Animation animationType="fade">
+            <Grid container>
+              <Grid item xs={12}>
+                <Grid container>
+                  <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
+                  <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
+                  <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
+                </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container>
+                  <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
+                  <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
+                  <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
+                </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container>
+                  <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
+                  <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
+                  <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
+                </Grid>
               </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <Grid container>
-                <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-                <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-                <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-              </Grid>
-            </Grid>
-            <Grid item xs={12}>
-              <Grid container>
-                <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-                <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-                <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-              </Grid>
-            </Grid>
-          </Grid>
+          </Animation>
         </Grid>
       </Grid>
     </Grid>
@@ -147,9 +169,7 @@ function calculateWinner(squares) {
   return null;
 }
 
-// verifica pe care linii trebuie blocat jucatorul sa nu castige
-function checkDangerLines(squares) {
-  let dangerLines = [];
+function checkLines(squares, player) {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -160,24 +180,50 @@ function checkDangerLines(squares) {
     [0, 4, 8],
     [2, 4, 6],
   ];
+  const blockingLines = lines.filter(([a, b, c]) => {
+    const isBlockingLine =
+      (squares[a] === player && squares[b] === player && squares[c] === null) ||
+      (squares[a] === player && squares[c] === player && squares[b] === null) ||
+      (squares[b] === player && squares[c] === player && squares[a] === null);
 
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (
-      (squares[a] === 'X' && squares[b] === 'X' && squares[c] == null) ||
-      (squares[a] === 'X' && squares[c] === 'X' && squares[b] == null) ||
-      (squares[b] === 'X' && squares[c] === 'X' && squares[a] == null)
-    ) {
-      dangerLines.push([a, b, c].filter((i) => squares[i] === null)[0]);
-    }
+    return isBlockingLine;
+  });
+  if (blockingLines.length > 0) {
+    const positions = blockingLines.map(([a, b, c]) => {
+      if (squares[a] === player && squares[b] === player && squares[c] === null) {
+        return c;
+      } else if (squares[a] === player && squares[c] === player && squares[b] === null) {
+        return b;
+      } else {
+        return a;
+      }
+    });
+
+    return positions;
   }
 
-  if (dangerLines.length === 0) return checkBestLines(squares);
+  const winningLines = lines.filter(([a, b, c]) => {
+    const isWinningLine =
+      (squares[a] === player && squares[b] === player && squares[c] === null) ||
+      (squares[a] === player && squares[c] === player && squares[b] === null) ||
+      (squares[b] === player && squares[c] === player && squares[a] === null);
 
-  return dangerLines;
-}
+    return isWinningLine;
+  });
 
-function checkBestLines(squares) {
-  // return best indices for next move
-  return [];
+  if (winningLines.length === 0) {
+    return [];
+  }
+
+  const positions = winningLines.map(([a, b, c]) => {
+    if (squares[a] === player && squares[b] === player && squares[c] === null) {
+      return c;
+    } else if (squares[a] === player && squares[c] === player && squares[b] === null) {
+      return b;
+    } else {
+      return a;
+    }
+  });
+
+  return positions;
 }

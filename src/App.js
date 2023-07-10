@@ -1,16 +1,19 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Button from '@mui/material/Button';
-import { Grid, Typography, Container, selectClasses } from '@mui/material';
+import { Grid, Typography, Container, Box } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 
 import CurrentMove, { Step } from './AllSteps';
 import Board from './Board';
 import theme from './Themes';
 import CoinFlip from './Coin';
+import Animation from './Animations';
+import { AnimatedContainer } from './Themes';
+import { Fullscreen } from '@mui/icons-material';
 
-function Steps(a) {
-  let { param1, param2 } = a;
+function Steps(props) {
+  let { param1, param2 } = props;
   return (
     <Grid container>
       <Grid item xs={6}>
@@ -23,17 +26,18 @@ function Steps(a) {
   );
 }
 
-export default function Game(props) {
+export default function Game(isFlipped) {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
   // verifica cine urmeaza
-  const xIsNext = currentMove % 2 === 0;
+  const [firstPlayer, setFirstPlayer] = useState(0);
+  const [isComponentVisible, setIsComponentVisible] = useState(false);
+  const xIsNext = currentMove % 2 === firstPlayer;
   const currentSquares = history[currentMove];
-  const [selectedPlayer, setSelectedPlayer] = useState('');
 
-  function handlePlayerSelect(player) {
-    setSelectedPlayer(player);
-  }
+  // function handlePlayerSelect(player) {
+  //   setSelectedPlayer(player);
+  // }
 
   function handlePlay(nextSquares) {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -62,26 +66,44 @@ export default function Game(props) {
   });
 
   return (
-    <ThemeProvider theme={theme}>
-      <Container maxWidth="lg">
+    <Container maxWidth="xl">
+      <ThemeProvider theme={theme}>
         <Grid container spacing={1}>
           <Grid item xs={12}>
             <Typography variant="h3" color={xIsNext ? `secondary` : `primary`}>
               TIC TAC TOE
             </Typography>
-            <CoinFlip onPlayerSelect={handlePlayerSelect} />
+            {!isComponentVisible && (
+              <CoinFlip
+                setFirstPlayer={setFirstPlayer}
+                xIsNext={xIsNext}
+                setIsComponentVisible={setIsComponentVisible}
+              />
+            )}
           </Grid>
-          <Grid item xs={4}>
-            <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} selectedPlayer={selectedPlayer} />
-            <Grid container spacing={1} direction="column">
-              {moves}
-            </Grid>
-          </Grid>
-          <Grid item xs={8}>
-            <Steps param1={history} param2={currentMove} />
-          </Grid>
+          {isComponentVisible && (
+            <Animation animationType="grow">
+              <Grid container>
+                <Grid item xs={4}>
+                  <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} isFlipped={isFlipped} />
+                  <Grid container spacing={1} direction="column">
+                    {moves}
+                  </Grid>
+                </Grid>
+                <Grid item xs={8}>
+                  <Steps param1={history} param2={currentMove} />
+                </Grid>
+              </Grid>
+            </Animation>
+          )}
         </Grid>
-      </Container>
-    </ThemeProvider>
+      </ThemeProvider>
+    </Container>
   );
+}
+
+{
+  /* <div class="abs" style={{ position: 'absolute', width: '100vw', height: '100vh', background: '#acac' }}>
+          <AnimatedContainer></AnimatedContainer>
+        </div> */
 }

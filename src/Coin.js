@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { Button, Grid, Paper } from '@mui/material';
 
-export default function CoinFlip({ onPlayerSelect }) {
-  const [randomPlayer, setRandomPlayer] = useState('');
+import Animation from './Animations';
+
+export default function CoinFlip(props) {
+  let { setFirstPlayer, xIsNext, setIsComponentVisible } = props;
   const [isFlipped, setIsFlipped] = useState(false);
 
   const flipCoin = () => {
-    setIsFlipped((prevState) => !prevState);
-    const values = ['X', 'O'];
+    const values = [0, 1];
     const randomIndex = Math.floor(Math.random() * values.length);
-    const selectedPlayer = values[randomIndex];
-    setRandomPlayer(selectedPlayer);
-    onPlayerSelect(selectedPlayer);
+
+    if (!isFlipped) setIsFlipped((prevState) => !prevState);
+    setFirstPlayer(randomIndex);
   };
+
+  useEffect(() => {
+    if (isFlipped) {
+      const timer1 = setTimeout(() => {
+        setIsComponentVisible(true);
+      }, 1000);
+      return () => clearTimeout(timer1);
+    }
+  }, [isFlipped]);
 
   const { transform, opacity } = useSpring({
     from: { transform: 'perspective(600px) rotateY(0deg)' },
@@ -24,9 +34,11 @@ export default function CoinFlip({ onPlayerSelect }) {
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="flex-start">
       <Grid item>
-        <Button variant="outlined" onClick={flipCoin}>
-          Get Random Player
-        </Button>
+        <Animation animationType="slide" direction={isFlipped ? 'right' : 'left'}>
+          <Button variant="outlined" onClick={flipCoin}>
+            Get Random Player
+          </Button>
+        </Animation>
       </Grid>
       <Grid item>
         <animated.div
@@ -35,21 +47,23 @@ export default function CoinFlip({ onPlayerSelect }) {
             transform,
           }}
         >
-          <Paper
-            sx={{
-              background: 'linear-gradient(45deg, #ffcbcb, #8ed6ff)',
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              color: 'white',
-              fontSize: '24px',
-            }}
-          >
-            {randomPlayer}
-          </Paper>
+          <Animation animationType="slide" direction={isFlipped ? 'right' : 'left'}>
+            <Paper
+              sx={{
+                background: 'linear-gradient(45deg, #7f7fd5, #8ed6ff)',
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                color: 'white',
+                fontSize: '24px',
+              }}
+            >
+              {isFlipped ? (xIsNext ? 'X' : 'O') : ' '}
+            </Paper>
+          </Animation>
         </animated.div>
       </Grid>
     </Grid>
