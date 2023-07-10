@@ -28,12 +28,16 @@ export default function Board(props) {
     let possibleNextMoves = [];
     let nextMoveIndex = 0;
     const timer = setTimeout(() => {
-      if (selectedPlayer === 'O' && !xIsNext) {
+      if (!xIsNext) {
         for (let i = 0; i < squares.length; i++) {
           if (squares[i] === null) {
             possibleNextMoves.push(i);
           }
+          console.log(possibleNextMoves, 'sfew');
         }
+        // indexii din squares care s cei mai buni
+        // a. de blocat pentru a nu pierde
+        // b. de castigat
         let dangerLines = checkDangerLines(squares);
         if (dangerLines.length > 0) {
           let randomIndex = Math.floor(Math.random() * dangerLines.length);
@@ -46,7 +50,7 @@ export default function Board(props) {
       }
     }, 2000);
     return () => clearTimeout(timer);
-  }, [xIsNext, selectedPlayer]);
+  }, [xIsNext]);
 
   function handleClick(i) {
     const nextSquares = squares.slice();
@@ -148,6 +152,7 @@ function calculateWinner(squares) {
 }
 
 // verifica pe care linii trebuie blocat jucatorul sa nu castige
+
 function checkDangerLines(squares) {
   let dangerLines = [];
   const lines = [
@@ -168,16 +173,42 @@ function checkDangerLines(squares) {
       (squares[a] === 'X' && squares[c] === 'X' && squares[b] == null) ||
       (squares[b] === 'X' && squares[c] === 'X' && squares[a] == null)
     ) {
+      // indexii pe care sumnt elemente nule si care au probabilitatea ce mai mare sa fie pierzatoare
       dangerLines.push([a, b, c].filter((i) => squares[i] === null)[0]);
     }
   }
 
-  if (dangerLines.length === 0) return checkBestLines(squares);
+  if (dangerLines.length === 0)
+    // returneaza check best lines ( indexii pe care sumnt elemente nule si
+    // care au probabilitatea ce mai mare sa fie catigatoare )
+    return checkBestLines(squares);
 
   return dangerLines;
 }
 
 function checkBestLines(squares) {
+  let bestLines = [];
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
   // return best indices for next move
-  return [];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (
+      (squares[a] === 'O' && squares[b] === 'O' && squares[c] == null) ||
+      (squares[a] === 'O' && squares[c] === 'O' && squares[b] == null) ||
+      (squares[b] === 'O' && squares[c] === 'O' && squares[a] == null)
+    ) {
+      bestLines.push([a, b, c].filter((i) => squares[i] === null)[0]);
+    }
+  }
+
+  return bestLines;
 }
